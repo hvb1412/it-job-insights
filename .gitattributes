@@ -1,0 +1,9 @@
+# Files copied byte-for-byte from the reference project must not be rewritten by
+# the repository's platform line-ending setting.
+/requirements.txt -text
+/jobmarket/** -text
+/tests/test_crawler.py -text
+/tests/test_listing_crawler.py -text
+/tests/fixtures/** -text
+/data/seed_urls.txt -text
+/data/raw/** -text

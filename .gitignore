@@ -1,0 +1,31 @@
+# Local environments, package outputs, and test/cache files
+.venv/
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Derived outputs are not source-reference inputs.
+data/interim/*.csv
+data/processed/*.csv
+reports/tables/
+reports/figures/
+reports/artifacts/*.joblib
+reports/artifacts/*.json
+
+# Ignore newly generated crawler outputs, but keep the explicitly versioned
+# reference snapshot and its log transferred for Lecture 2.
+data/raw/live/*.csv
+data/raw/live/*_log.json
+!data/raw/live/live_20261117T150738Z.csv
+!data/raw/live/live_20261117T150738Z_log.json
+
+# Keep only the four historical source snapshots deliberately transferred for
+# reproducible comparison; new raw inputs require an explicit provenance update.
+data/raw/reference_2026/*.csv
+!data/raw/reference_2026/careerviet_historical_raw.csv
+!data/raw/reference_2026/itviec_historical_raw.csv
+!data/raw/reference_2026/linkedin_historical_raw.csv
+!data/raw/reference_2026/topcv_historical_raw.csv
