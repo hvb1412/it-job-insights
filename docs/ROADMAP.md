@@ -1,70 +1,72 @@
 # Lộ trình chuyển nguyên trạng theo Lecture
 
-Repository này là đích chuyển mã từ `it-jobmarket-react`, không phải nơi viết lại
-chức năng tương đương. Các commit phải mô tả phần **đã chuyển và đã kiểm tra**,
-không mô tả chúng như lịch sử phát triển gốc.
+Repository này chuyển mã từ `it-jobmarket-react`, không viết lại chức năng tương
+đương. Commit phải mô tả phần **đã chuyển và đã kiểm tra**, không mô tả chúng như
+lịch sử phát triển gốc. Với file nhiều Lecture, chỉ chuyển phần phù hợp khi vẫn giữ
+hành vi; nếu không an toàn, hoãn file và ghi dependency.
 
-## Giao thức áp dụng cho mọi giai đoạn
+## Trạng thái hiện tại
 
-1. Đọc cấu trúc và dependency của nguồn ở chế độ chỉ đọc.
-2. Chỉ chuyển file/phần file cần cho Lecture hiện tại; copy nguyên byte khi file
-   thuộc duy nhất một giai đoạn.
-3. Cho phép đưa dependency dùng chung vào sớm, ghi rõ lý do. Với file nhiều Lecture,
-   chỉ chuyển phần liên quan hoặc hoãn toàn bộ file nếu việc tách làm sai hành vi.
-4. So SHA-256 cho file nguyên vẹn và chạy kiểm tra không đòi thành phần chưa chuyển.
-5. Ghi nguồn dữ liệu, giới hạn chạy và kết quả thực tế vào `STATUS.md`,
-   `TASK_BOARD.md` và `DATA_AND_SOURCES.md`; sau đó mới commit.
-
-Không chuyển `.git`, môi trường ảo, `node_modules`, cache hoặc build output. Dữ liệu
-raw/fixture/artifact có sẵn phải được mô tả là kế thừa từ nguồn, không phải tạo mới.
-
-## Trạng thái lượt hiện tại
-
-| Giai đoạn | Trạng thái trước khi chuyển | Mốc đối chiếu |
+| Giai đoạn | Trạng thái | Mốc đối chiếu |
 |---|---|---|
-| Khởi tạo | IN_PROGRESS | Gốc repo, docs, ignore rules, README và dependency tối thiểu |
-| Lecture 2 | TODO | Schema/raw/crawler/fixture/test, dữ liệu raw và log |
-| Lecture 3–7 | TODO | Chờ theo thứ tự phụ thuộc |
-| Lecture 8 | BLOCKED | Chỉ xác minh phần tương ứng trong nguồn khi đến giai đoạn |
-| API/UI/final | TODO | Chờ pipeline Lecture hoàn chỉnh |
+| Khởi tạo | DONE | `d75492b`: docs/config/README/ignore/dependency |
+| Lecture 2 | DONE | 15 file hash-match; 12 test offline/mock pass |
+| Lecture 3 | TODO | Chờ chuyển cleaning/skills và test phụ thuộc |
+| Lecture 4–7 | TODO | Chờ thứ tự tích hợp |
+| Lecture 8 | BLOCKED | Chỉ xác minh nguồn khi đến giai đoạn; không tự bổ sung |
+| Backend, frontend, final | TODO | Chờ pipeline Lecture hoàn chỉnh |
+
+## Quy tắc chuyển và nghiệm thu
+
+1. Đọc nguồn chỉ đọc, phạm vi task và dependency trước khi copy.
+2. Không chuyển `.git`, `.venv`, `node_modules`, cache hoặc build output.
+3. So SHA-256 cho từng file copy nguyên vẹn. Với dữ liệu, kiểm tra header/số bản
+   ghi/log và ghi provenance; không sửa để khớp output đã có.
+4. Chạy chỉ test có dependency đã chuyển; phần chưa test phải ghi rõ, không suy ra PASS.
+5. Cập nhật STATUS, TASK_BOARD, DATA_AND_SOURCES và contract liên quan trước commit.
 
 ## Theo giai đoạn
 
-### Khởi tạo
+### Khởi tạo — hoàn thành
 
-- Hợp nhất bộ tài liệu vào gốc repo đích; xác định branch, thay đổi có sẵn và Git identity.
-- Tạo README, `.gitignore` và dependency để bắt đầu với môi trường mới.
-- Ghi rõ nguồn tham chiếu và cách dữ liệu được lưu để đối chiếu lại.
+Đã hợp nhất tài liệu vào gốc repo, kiểm tra Git/branch/trạng thái, thay README,
+tạo `.gitignore` có whitelist raw inputs cần version và dùng `requirements.txt`
+nguồn nguyên vẹn. Môi trường `.venv` được tạo mới tại đích và bị ignore.
 
-### Lecture 2 — Thu thập và dữ liệu thô
+### Lecture 2 — hoàn thành
 
-- Chuyển `jobmarket/schema.py`, `jobmarket/crawler.py`, package/config dùng chung,
-  fixture, test parser/listing crawler, `seed_urls.txt`, CSV raw tham chiếu và log live.
-- Dữ liệu lịch sử 13 cột và live snapshot 18 cột giữ nguyên; không crawl mới.
-- `jobmarket/cli.py` và `tests/test_raw_contract.py` được hoãn vì cùng chứa/nhập
-  trực tiếp logic cleaning của Lecture 3. Test L2 chỉ được chạy offline/mocked.
+- Chuyển nguyên vẹn `schema.py`, `crawler.py`, `__init__.py`, `config.py`, fixture,
+  parser/listing crawler tests, URL seed và raw datasets/log cần thiết.
+- `crawler.py` nhận URL listing/detail hoặc fixture offline, tôn trọng robots khi
+  crawl live, rồi ghi record raw 18 cột và JSON log. Không crawl live trong lượt này.
+- Historical CSV 13 cột và live snapshot 18 cột được chuyển như input có sẵn;
+  provenance/hash ở `DATA_AND_SOURCES.md`.
+- Hoãn `cli.py`, raw-contract test và mọi code cleaning vì chúng chứa hoặc nhập L3.
 
-### Lecture 3 — Làm sạch và tích hợp
+### Lecture 3 — bước kế tiếp
 
-- Chuyển `cleaning.py`, `skills.py`, các phần CLI/test liên quan và dữ liệu/đầu ra cần
-  thiết để đối chiếu. Không tạo số liệu thay thế khi output đóng gói khác lần chạy mới.
+Chuyển nguyên vẹn `jobmarket/cleaning.py`, `jobmarket/skills.py`, các phần
+`cli.py`/test cần thiết và output metadata phù hợp. Chạy test cleaning và raw
+contract sau khi dependencies đã đủ. Không dùng CSV sạch/model/figure đóng gói để
+thay thế kết quả chạy mới.
 
 ### Lecture 4–6 — EDA và trực quan hóa
 
-- Phân tích `eda.py` trước khi chia theo Lecture 4, 5 và 6. Các phần được chuyển qua
-  nhiều commit phải ghép lại đúng nội dung file nguồn ở cuối Lecture 6.
+Phân tích `eda.py` trước khi chia L4, L5 và L6. Nếu file phải được chia qua nhiều
+commit, nội dung cuối Lecture 6 phải hash-match file nguồn đầy đủ; mở xem figure
+thực tế khi phần đó được chuyển.
 
-### Lecture 7 — Modeling
+### Lecture 7 — modeling
 
-- Chuyển `modeling.py`, test và artifacts cần thiết; phân biệt model đóng gói với model
-  sinh trong lần chạy mới.
+Chuyển `modeling.py`, test, artifact cần thiết và contract dự đoán theo nguồn;
+phân biệt artifact đóng gói khỏi artifact sinh trong lần chạy mới.
 
 ### Lecture 8
 
-- Kiểm tra nguồn có phần tương ứng hay không. Nếu không có, ghi bằng chứng và dừng;
-  không tự viết công nghệ hoặc chức năng mới.
+Kiểm tra nguồn có phần tương ứng không. Nếu không có, ghi bằng chứng và dừng;
+không tự thêm Spark, Dask, dữ liệu nhân tạo hay tính năng mới.
 
 ### Hoàn thiện sản phẩm
 
-- Chỉ sau các Lecture, chuyển `backend/`, `frontend/`, tài nguyên cần thiết và test còn
-  lại; đối chiếu giao diện/chức năng/cấu trúc với nguồn, không copy build output.
+Sau các Lecture, chuyển backend, frontend, tài nguyên và test còn lại cần để
+đối chiếu giao diện/chức năng/cấu trúc với nguồn; không copy `dist` hay dependencies cục bộ.

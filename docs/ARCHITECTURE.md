@@ -1,40 +1,49 @@
-# Kiến trúc và hợp đồng dự kiến
+# Kiến trúc và phạm vi chuyển
 
-Tài liệu mô tả đích triển khai. Đối chiếu repo trước khi coi một thành phần là đã có.
+Tài liệu này phân biệt thành phần đã chuyển với kiến trúc đích trong nguồn. Một
+thành phần chỉ được coi là có khi đã xuất hiện trong repository này và được ghi
+trạng thái thực tế.
 
-## Thành phần
-| Thành phần | Trách nhiệm | Đầu ra / nơi lưu dự kiến |
+## Thành phần hiện có — Lecture 2
+
+| Thành phần | Trạng thái | Vai trò / dependency |
 |---|---|---|
-| jobmarket/schema.py | Schema dữ liệu thô | Danh sách trường dùng chung |
-| jobmarket/crawler.py | Parser và thu thập | data/raw, log |
-| jobmarket/cleaning.py, skills.py | Chuẩn hóa và tích hợp | data/interim, data/processed |
-| jobmarket/eda.py | Bảng thống kê và biểu đồ | reports/tables, reports/figures |
-| jobmarket/modeling.py | Train, đánh giá và inference | reports/artifacts |
-| jobmarket/cli.py | Điều phối tác vụ theo giai đoạn | Lệnh CLI |
-| backend/main.py | API dashboard và dự đoán | HTTP JSON |
-| frontend/ | Năm trang React | Giao diện trình duyệt |
-| tests/ | Kiểm thử hành vi và hợp đồng | Kết quả kiểm tra |
+| `jobmarket/schema.py` | Đã chuyển nguyên vẹn | Hợp đồng 18 trường raw dùng chung |
+| `jobmarket/config.py` | Đã chuyển nguyên vẹn | Đường dẫn raw/live/interim/processed/reports; crawler import trực tiếp |
+| `jobmarket/crawler.py` | Đã chuyển nguyên vẹn | Parser JSON-LD/HTML, listing/pagination, robots, offline crawl và lưu raw/log |
+| `tests/test_crawler.py` | Đã chuyển nguyên vẹn | Parser + fixture offline |
+| `tests/test_listing_crawler.py` | Đã chuyển nguyên vẹn | Listing/pagination/crawler với request mocked |
+| `data/raw/**`, `seed_urls.txt` | Đã chuyển nguyên vẹn | Input raw có sẵn và URL seed, không phải output lần chạy này |
 
-Luồng: dữ liệu thô → cleaning → dữ liệu sạch → EDA/biểu đồ và training → artifacts → FastAPI → React. UI không trực tiếp huấn luyện mô hình. Mỗi giai đoạn chỉ nhập những module đã triển khai.
+`config.py` có định nghĩa đường dẫn của giai đoạn sau do đó có thư mục rỗng xuất
+hiện khi import; điều này không có nghĩa cleaning, EDA hay model tồn tại.
 
-## Hợp đồng dữ liệu
-Schema raw và quy tắc biến đổi nằm trong DATA_AND_SOURCES. Thay tên, kiểu hoặc đơn vị phải ghi DECISIONS và thông báo task phụ thuộc. Không sửa âm thầm CSV để làm biểu đồ đẹp hoặc tăng điểm mô hình.
+## Luồng dữ liệu Lecture 2
 
-## API dự kiến
-| Endpoint | Vai trò | Đầu vào / đầu ra chính |
+```text
+data/seed_urls.txt ──► crawl_urls (robots + listing/detail HTML)
+                                 │
+fixture HTML ─────────► parse_job_html ─► record COLUMNS (18 trường)
+                                 │
+                         save_crawl ─► data/raw/live/<mode>_<UTC>.csv
+                                              + <mode>_<UTC>_log.json
+
+reference_2026/*.csv (13 cột, dữ liệu lịch sử có sẵn) ─► giữ nguyên cho Lecture 3
+live_20261117T150738Z.csv (18 cột, crawl có sẵn) ─────► giữ nguyên, không crawl lại
+```
+
+`crawl_urls` chỉ dành cho URL được phép truy cập; thao tác live chưa chạy ở đây.
+`crawl_offline_html` chỉ phục vụ fixture test, và timestamp của fixture không phải
+bằng chứng crawl Internet.
+
+## Thành phần chưa chuyển
+
+| Thành phần nguồn | Giai đoạn dự kiến | Lý do chưa có |
 |---|---|---|
-| GET /api/options | Lấy lựa chọn bộ lọc/form | source, location, category, job_type, skills |
-| GET /api/dashboard | Thống kê theo bộ lọc | Lọc nhiều source/location; total, salary_count, sources_count, median; bảng nguồn, địa điểm, cấp bậc, nhóm nghề, tháng, kỹ năng, lương; sample, quality, metrics |
-| POST /api/predict | Ước lượng lương | location, job_level, category, job_type, experience_years, skills → salary |
-| GET /figures/{filename} | Hình phân tích | File ảnh được phép phục vụ |
+| `cleaning.py`, `skills.py`, phần `cli.py` | L3 | Phụ thuộc làm sạch/tích hợp |
+| `eda.py`, `reporting.py` | L4–6 | Chứa EDA/figure nhiều Lecture |
+| `modeling.py` | L7 | Phụ thuộc cleaned data và artifacts |
+| `backend/`, `frontend/` | Sau L7 | Phụ thuộc pipeline/API contract |
 
-Lương trả về dự kiến theo triệu VND/tháng, trong phạm vi dữ liệu được xác minh. Bộ lọc không chọn mục nào phải có ý nghĩa rõ ràng; thống nhất với UI trước khi triển khai. Quy tắc ban đầu: không chọn mục nào trả tập rỗng, thiếu tham số trả tất cả.
-
-Trước API-01, bổ sung JSON mẫu, kiểu trường, ý nghĩa null, mã lỗi, cách phân trang/giới hạn sample và việc quality/metrics thuộc toàn bộ lần chạy hay tập lọc. Không để UI suy diễn phạm vi từ nhãn.
-
-## Kiểm tra tích hợp tối thiểu
-- Tổng số tin và số nhãn lương khớp CSV đang dùng.
-- Bộ lọc một/nhiều/không mục có kết quả đúng.
-- Không có lương hợp lệ trả null phù hợp, không tạo số trung bình giả.
-- Form dự đoán dùng cùng thứ tự và ý nghĩa đặc trưng với mô hình.
-- Thiếu artifact hoặc mất API hiển thị thông báo có thể hiểu được.
+API endpoints và React dashboard mô tả trong nguồn vẫn chỉ là kiến trúc đích; không
+được xem là endpoint/UI đang hoạt động cho tới khi các file tương ứng được chuyển và test.

@@ -1,49 +1,60 @@
 # Dữ liệu, phiên bản và nguồn
 
-## Nguyên tắc
-Ghi đúng dữ liệu, mã, tài sản hoặc phương pháp được kế thừa. Tách nguồn dữ liệu khỏi đóng góp triển khai của thành viên. Chưa xác minh quyền sử dụng hoặc metadata thì đánh dấu chờ xác nhận, không tự ghi “nhóm tự thu thập” hoặc “đã được cho phép”.
+## Nguyên tắc provenance
 
-## Thông tin đã quan sát khi lập kế hoạch
-Các số dưới đây được đọc từ gói tài liệu/mã nguồn được cung cấp để khảo sát, không phải đầu ra mới của IT Job Insights.
+Tất cả dữ liệu ở đây được chuyển nguyên trạng từ
+`../it-jobmarket-react/it-jobmarket-react/` ngày 22/11/2026. Việc chuyển không
+phải là crawl mới hay tạo dataset mới. Dự án nguồn tự mô tả snapshot lịch sử là
+kế thừa từ “Nhóm 14”; quyền sử dụng, cách thu thập ban đầu và quyền phân phối chưa
+được xác minh độc lập, nên không được diễn giải mạnh hơn thông tin đó.
 
-| Bộ dữ liệu / artifact | Số lượng quan sát | Cách diễn giải |
-|---|---:|---|
-| Snapshot CareerViet | 950 dòng | CSV lịch sử có sẵn |
-| Snapshot ITviec | 823 dòng | CSV lịch sử có sẵn |
-| Snapshot LinkedIn | 743 dòng | CSV lịch sử có sẵn |
-| Snapshot TopCV | 3.323 dòng | CSV lịch sử có sẵn |
-| Tổng bốn snapshot | 5.839 dòng | Tổng đầu vào lịch sử |
-| CSV live_20261117T150738Z | 1.090 dòng | File crawl có sẵn; chưa phải crawl của lần triển khai mới |
-| CSV sạch đóng gói | 2.946 dòng | Đầu ra sẵn có; không mặc định khớp code cleaning hiện tại |
+## Snapshot đã chuyển và đối chiếu
 
-Tài liệu khảo sát có ghi nguồn snapshot kế thừa Nhóm 14. Nhóm cần xác nhận mô tả nguồn gốc, quyền sử dụng và cách trích dẫn trước khi phân phối hoặc nộp. Các kết quả chất lượng và mô hình đóng gói có thể thuộc phiên bản quy tắc cũ; dùng chúng như thông tin khảo sát, không ghi làm kết quả mới.
+| File đích | Loại / schema | Bản ghi logic | SHA-256 |
+|---|---|---:|---|
+| `data/raw/reference_2026/careerviet_historical_raw.csv` | Historical, 13 cột | 950 | `28B88B414C6600E85D1E8165A92B04CAB4D43116BB0707DCAA22CB2456532754` |
+| `data/raw/reference_2026/itviec_historical_raw.csv` | Historical, 13 cột | 823 | `78A71847B1F843BD29ADC343E44B917C44ACFBFDA22DBB54B3BA34434CDFA65E` |
+| `data/raw/reference_2026/linkedin_historical_raw.csv` | Historical, 13 cột | 743 | `F31542CAC6396692BC7841D5C1C9C401C784751C48DF34BC424B19FF3134E4B7` |
+| `data/raw/reference_2026/topcv_historical_raw.csv` | Historical, 13 cột | 3.323 | `F7BE3A7F26CEDA79DAAA1B24A99653007B9A129D6BCC161172021AC4C5EBC77D` |
+| `data/raw/live/live_20261117T150738Z.csv` | Existing live crawl, 18 cột | 1.090 | `8F713C4C6492706A8E3CBB56B6A90CAB539EBCB8E6305529B355450966A1939F` |
+| `data/raw/live/live_20261117T150738Z_log.json` | Log của snapshot live | — | `8840A39B9BB0C591B342F8B59841AFCE0D2A81A3392EF689DFC831E70A0999BC` |
 
-## Sổ nguồn cần hoàn thiện
-| Đối tượng | Nguồn/tác giả | Phiên bản/checksum | Phạm vi sử dụng | Trạng thái |
-|---|---|---|---|---|
-| Snapshot lịch sử | Theo metadata/tài liệu được cung cấp, cần xác nhận | Chưa ghi | Dự kiến phân tích và huấn luyện | Chờ xác nhận |
-| CSV crawl có sẵn | Theo log đi kèm, cần kiểm tra | Chưa ghi | Chưa chốt gộp cùng lịch sử | Chờ xác nhận |
-| Mã/thành phần tái sử dụng | Điền nguồn thực tế khi đưa vào repo | Commit hoặc phiên bản thực tế | Ghi file/phần kế thừa và sửa đổi | Chưa kiểm kê |
-| Fixture offline | Người tạo fixture phải được ghi | Theo Git | Chỉ kiểm thử | Chưa nhập |
+Số bản ghi là số CSV logical (không phải số dòng vật lý, vì mô tả công việc có
+thể chứa xuống dòng). Hash của tất cả file trên đã so trực tiếp với nguồn và trùng.
+Một số mô tả trong CSV nguồn có khoảng trắng cuối dòng; chúng được giữ nguyên thay
+vì dọn định dạng, để file tiếp tục byte-identical với nguồn.
 
-## Schema raw đích
-18 trường: job_title, company_name, location, salary_min, salary_max, salary_currency, experience_required, skills, job_type, job_level, posted_date, source, job_description, url, salary_raw, salary_period, experience_raw, crawled_at.
+Log live được giữ nguyên byte, kể cả trường `file` trỏ tới đường dẫn gốc `F:\\...`.
+Đường dẫn đó là bằng chứng lịch sử của nguồn, **không** phải vị trí hiện tại của
+file trong repository đích.
 
-Snapshot cũ được quan sát chỉ có 13 trường đầu đến job_description. Nhập dữ liệu phải bổ sung trường thiếu bằng giá trị rỗng và ghi file gốc; không tạo URL hoặc thời điểm crawl giả.
+## Hợp đồng dữ liệu raw
 
-## Quy tắc xử lý dự kiến
-- Thiếu tiêu đề/công ty: loại và đếm rõ.
-- Nhận diện vị trí IT bằng quy tắc: công bố giới hạn, kiểm tra tay mẫu phù hợp.
-- Địa điểm, kinh nghiệm, cấp bậc, ngày đăng: chuẩn hóa và giữ khả năng truy nguyên raw.
-- Không tự quy đổi USD nếu thiếu tỷ giá có nguồn và ngày áp dụng.
-- Lương có kỳ ghi rõ không phải tháng không làm nhãn lương tháng nếu chưa có quy tắc chuyển đổi được chấp nhận.
-- Chu kỳ lương không rõ phải ghi là chưa xác minh; không tự coi chắc chắn theo tháng.
-- Chỉ tính midpoint khi có hai cận hợp lệ; không điền lương thiếu bằng trung bình để huấn luyện.
-- Fixture offline không đi vào dữ liệu nghiên cứu.
-- Lưu raw bất biến; mọi biến đổi thực hiện bằng code có phiên bản.
+`jobmarket.schema.COLUMNS` có 18 trường theo thứ tự:
 
-## Bằng chứng mỗi lần chạy
-Ghi input/checksum, nguồn, thời gian thực thi, code commit, dependencies, tham số, số raw/clean/loại, artifacts và giới hạn. Không gộp dữ liệu live vào lịch sử mặc định khi chưa ghi rõ phạm vi và kiểm tra trùng.
+`job_title`, `company_name`, `location`, `salary_min`, `salary_max`,
+`salary_currency`, `experience_required`, `skills`, `job_type`, `job_level`,
+`posted_date`, `source`, `job_description`, `url`, `salary_raw`, `salary_period`,
+`experience_raw`, `crawled_at`.
 
-## Lưu dữ liệu cho người nhận
-Nhóm chọn lưu snapshot được phép trong Git hoặc nơi chia sẻ có phiên bản/checksum và hướng dẫn lấy. Nếu .gitignore bỏ CSV, README phải có cách nhận đúng input. Không commit môi trường ảo hoặc mô hình nhị phân không rõ nguồn; mô hình phục vụ nên được tái tạo từ pipeline đã kiểm tra.
+Snapshot historical chỉ có 13 trường đầu đến `job_description`. Lecture 3 phải
+đọc chúng như dữ liệu legacy và bổ sung giá trị thiếu trong bộ nhớ/code; không sửa
+CSV raw hay bịa `url`/`crawled_at`. Live snapshot đã có đủ 18 trường.
+
+## Tạo raw output trong code nguồn đã chuyển
+
+- `seed_urls.txt` cung cấp URL listing ban đầu. `crawl_urls` kiểm tra robots.txt,
+  tìm link detail, lấy HTML, parse JSON-LD `JobPosting` trước rồi fallback HTML.
+- `parse_job_html` chỉ trả record khi có title và company; trường thiếu là `None`,
+  ghi CSV thành ô rỗng. Lương không rõ hoặc chu kỳ không phải tháng không tự quy đổi.
+- `save_crawl` ghi CSV 18 cột và log JSON timestamp UTC vào `data/raw/live/`.
+  Các output mới mặc định bị `.gitignore` bỏ qua để không nhầm với snapshot mốc.
+- Fixture offline chỉ dùng để test parser; không đi vào dữ liệu nghiên cứu. Không có
+  crawl mạng nào được thực hiện trong lượt này.
+
+## Lưu dữ liệu và output sau này
+
+Bốn historical CSV, một live snapshot và log là input mốc được version trong Git
+nhờ whitelist tường minh. `data/interim/`, `data/processed/`, report/artifact và
+live output mới bị ignore cho tới khi nhóm chốt provenance/chủ đích version. Không
+commit môi trường ảo, mô hình nhị phân không rõ nguồn hoặc cache.

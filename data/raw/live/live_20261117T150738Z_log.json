@@ -1,0 +1,24 @@
+{
+  "mode": "live",
+  "timestamp_utc": "20261117T150738Z",
+  "rows": 1090,
+  "errors": [
+    {
+      "url": "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-cr257?category_family=r257&page=51",
+      "reason": "Website gioi han truy cap: HTTP 429"
+    },
+    {
+      "url": "https://careerviet.vn/viec-lam/cntt-phan-mem-c1-trang-11-vi.html",
+      "reason": "Trang khong co link moi; dung de tranh lap hoac bo qua loi HTML."
+    },
+    {
+      "url": "https://itviec.com/it-jobs?query=&source=search_job&page=32",
+      "reason": "Trang khong co link moi; dung de tranh lap hoac bo qua loi HTML."
+    },
+    {
+      "url": "https://itviec.com/it-jobs/microsoft-dynamics-365",
+      "reason": "Khong trich xuat du title + company"
+    }
+  ],
+  "file": "F:\\IT4930_BO_HUONG_DAN_CODE_A_Z_VA_DATA\\it-jobmarket-react\\data\\raw\\live\\live_20261117T150738Z.csv"
+}
